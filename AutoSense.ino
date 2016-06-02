@@ -22,9 +22,11 @@
 #define OKAYY 1
 #define BUMPY 2
 #define GD_ROLLERCOASTER 3 //GD = GOD DAMN 
-#define CAR_NO "DL4CAH6942"
+#define CAR_NO "DLxxAA8569"
 //MAX_SAMPLES samples per measurement 
 uint8_t accZ[MAX_SAMPLES]={};
+//a maximum of 4 total data bytes can be sent along with
+//this Car_no length therfore we have 3 more bytes that can be sent
 uint8_t RIDE=0;
 RF24 radio(PIN_CE, PIN_CS);
 RF24BLE BLE(radio);
