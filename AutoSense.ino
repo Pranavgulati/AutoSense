@@ -2,12 +2,12 @@
 #include <RF24.h>
 #include <RF24_config.h>
 #include <RF24BLE.h>
-
+#include "printf.h"
 #define PIN_CE  9 // chip enable
 #define PIN_CS  10   // chip select (for SPI)
 // The MAC address of the beacon
 //anything goes but should be constant over time
-#define MY_MAC_0  'A'
+#define MY_MAC_0  'B'
 #define MY_MAC_1  'A'
 #define MY_MAC_2  'A'
 #define MY_MAC_3  'A'
@@ -65,18 +65,22 @@ void setup() {
   Serial.begin(115200);
   SPI.begin();
   radio.begin();
+  printf_begin();
   BLE.begin();
 }
 void loop() {
   howsDaRide();
-   for (uint8_t channel = 0; channel < 3; channel++){  // Channel hopping do not alter
+   for (uint8_t channel = 0; channel < 1; channel++){  // Channel hopping do not alter
     BLE.setPhone(ANDROID);
     BLE.setMAC(MY_MAC_0, MY_MAC_1, MY_MAC_2, MY_MAC_3, MY_MAC_4, MY_MAC_5);
     BLE.setName(CAR_NO);
     BLE.setData(&RIDE, sizeof(RIDE));
     BLE.sendADV(channel);
     delay(1);    // Broadcasting interval
+ //   radio.printDetails();
+ BLE.printPacket();
   }
-  delay(500);
+  
+  delay(50);
 
 }
