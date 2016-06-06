@@ -70,15 +70,13 @@ void setup() {
 }
 void loop() {
   howsDaRide();
-   for (uint8_t channel = 0; channel < 1; channel++){  // Channel hopping do not alter
+   for (uint8_t channel = 0; channel < 3; channel++){  // Channel hopping do not alter
     BLE.setPhone(ANDROID);
     BLE.setMAC(MY_MAC_0, MY_MAC_1, MY_MAC_2, MY_MAC_3, MY_MAC_4, MY_MAC_5);
     BLE.setName(CAR_NO);
     BLE.setData(&RIDE, sizeof(RIDE));
     BLE.sendADV(channel);
     delay(1);    // Broadcasting interval
- //   radio.printDetails();
- BLE.printPacket();
   }
   
   delay(50);
