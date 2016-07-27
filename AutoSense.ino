@@ -84,8 +84,11 @@ void setup() {
   Wire.begin();
   accelgyro.initialize();
   Serial.println(accelgyro.testConnection() ? "Accelerometer connection successful" : "Accelerometer connection failed");
+  pinMode(3,OUTPUT);
 }
+int counter=0;
 void loop() {
+  counter+=15;
   howsDaRide();
    for (uint8_t channel = 0; channel < 3; channel++){  // Channel hopping do not alter
     BLE.setPhone(ANDROID);
@@ -96,5 +99,7 @@ void loop() {
     delay(1);    // Broadcasting interval
   }
  delay(50);
+ analogWrite(3,counter%240);
+ 
 
 }
