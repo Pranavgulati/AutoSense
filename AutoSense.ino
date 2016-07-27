@@ -3,6 +3,10 @@
 #include <RF24_config.h>
 #include <RF24BLE.h>
 #include "printf.h"
+#include "I2Cdev.h"
+#include "MPU6050.h"
+#include "Wire.h"
+    
 #define PIN_CE  9 // chip enable
 #define PIN_CS  10   // chip select (for SPI)
 // The MAC address of the beacon
@@ -25,39 +29,49 @@
 #define CAR_NO "DLxxAA8569"
 //MAX_SAMPLES samples per measurement 
 uint8_t accZ[MAX_SAMPLES]={};
+uint8_t gyrZ[MAX_SAMPLES]={};
 //a maximum of 4 total data bytes can be sent along with
 //this Car_no length therfore we have 3 more bytes that can be sent
-uint8_t RIDE=0;
+uint8_t ride=0;
+MPU6050 accelgyro;
+//calibration values to remove the gravity component
 RF24 radio(PIN_CE, PIN_CS);
 RF24BLE BLE(radio);
 
 void getSamples(){
+    int16_t ax, ay, az;
+  int16_t gx, gy, gz;
   for(byte i=0;i<MAX_SAMPLES;i++){
-      accZ[i]=analogRead(ACCZ_PIN);
+      accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+      accZ[i]=ax/10;
+      Serial.println(accZ[i]);
+      gyrZ[i]=gx/10;
       delay(1);//makes sure each reading is roughly 1ms apart
       }
   }
 void howsDaRide(){
-  //used to check accelerometer's zaxis values and
+
+   //used to check accelerometer's zaxis values and
   //assign relevant ride characteristics
   getSamples();
-  int diff=0;
+  int16_t diff=0;
   
   for(byte i=0;i+1<MAX_SAMPLES;i++){
       //find maximum difference here 
       if(abs(accZ[i+1]-accZ[i])>diff){diff=abs(accZ[i+1]-accZ[i]);}
       }
-      if(diff<=20){
-          RIDE =SWEET;
+      
+      if(diff<=40){
+          ride =SWEET;
           }
-      else if(diff>20&&diff<=40){
-          RIDE =OKAYY;
+      else if(diff>40&&diff<=100){
+          ride =OKAYY;
           }
-      else if(diff>40&&diff<=150){
-          RIDE =BUMPY;
+      else if(diff>100&&diff<=200){
+          ride =BUMPY;
           }
-      else if(diff>150){
-          RIDE =GD_ROLLERCOASTER;
+      else if(diff>200){
+          ride =GD_ROLLERCOASTER;
           }
     
   }
@@ -67,6 +81,9 @@ void setup() {
   radio.begin();
   printf_begin();
   BLE.begin();
+  Wire.begin();
+  accelgyro.initialize();
+  Serial.println(accelgyro.testConnection() ? "Accelerometer connection successful" : "Accelerometer connection failed");
 }
 void loop() {
   howsDaRide();
@@ -74,11 +91,10 @@ void loop() {
     BLE.setPhone(ANDROID);
     BLE.setMAC(MY_MAC_0, MY_MAC_1, MY_MAC_2, MY_MAC_3, MY_MAC_4, MY_MAC_5);
     BLE.setName(CAR_NO);
-    BLE.setData(&RIDE, sizeof(RIDE));
+    BLE.setData(&ride, sizeof(ride));
     BLE.sendADV(channel);
     delay(1);    // Broadcasting interval
   }
-  
-  delay(50);
+ delay(50);
 
 }
